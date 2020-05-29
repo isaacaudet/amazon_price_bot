@@ -163,13 +163,14 @@ def get_page_data(page_num, queue):
 
 if __name__ == '__main__':
     cmd = input('COMMANDS: [ADD, UPDATE] -> ')
+    sql_id = """SELECT * FROM monitors;"""
     ignore_count = 0
     if cmd == 'ADD' or cmd == 'add' or cmd == 'a':
         queue = []
         total_prods = 0
         start_time = time.time()
 
-        for i in range(1, 3):
+        for i in range(1, 4):
             get_page_data(i, queue)
             total_prods += len(queue)
 
@@ -178,15 +179,13 @@ if __name__ == '__main__':
             for i, lst in enumerate(queue):
                 cur, ignore_count = create_task(
                     con, [lst['id'], json.dumps(lst)], ignore_count)
-            print(str(i) + ' entries found.')
+            print(str(i+1) + ' entries found.')
 
             end_time = time.time()
-            try:
-                print('DB LENGTH: ' + str(cur.lastrowid))
-            except NameError:
-                print('NameError: EMPTY LISTS')
-                pass
+            cur.execute(sql_id)
+            db_length = len(cur.fetchall())
             running_time = float(end_time - start_time)
+            print('DB LENGTH: ' + str(db_length))
             print('TOTAL PRODUCTS: ' + str(total_prods))
             print('RUNNING TIME: ' + f'{running_time:.2f}')
             if ignore_count > 0:
@@ -195,12 +194,12 @@ if __name__ == '__main__':
             print('API MALFUNCTION')
 
     elif cmd == 'UPDATE' or cmd == 'update' or cmd == 'u':
-        sql_id = """SELECT MAX(id) FROM monitors;"""
+        sql_id = """SELECT * FROM monitors;"""
         start_time = time.time()
         queue = []
         total_prods = 0
 
-        for i in range(1, 3):
+        for i in range(1, 4):
             get_page_data(i, queue)
             total_prods += len(queue)
 
@@ -208,11 +207,11 @@ if __name__ == '__main__':
         if len(queue):
             for i, lst in enumerate(queue):
                 cur = insert_row(con, [lst['id'], json.dumps(lst)])
-            print(str(i) + ' entries found.')
+            print(str(i+1) + ' entries found.')
 
             end_time = time.time()
             cur.execute(sql_id)
-            db_length = cur.lastrowid
+            db_length = len(cur.fetchall())
             running_time = float(end_time - start_time)
             print('DB LENGTH: ' + str(db_length))
             print('TOTAL PRODUCTS SCRAPED: ' + str(total_prods))
