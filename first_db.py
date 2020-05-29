@@ -10,7 +10,8 @@ def db_connect(db_path=DEFAULT_PATH):
     return con
   
 def create_task(con, task):
-    sql = ''' INSERT INTO monitors'''
+    sql = ''' INSERT INTO products(name,count,rating,vendor)
+              VALUES(?,?,?,?) '''
     c = con.cursor()
     c.execute(sql, task)
     con.commit()
