@@ -7,9 +7,11 @@ import html5lib
 import json
 import os
 from notify_run import Notify
+from datetime import date
 
 
 DEFAULT_PATH = os.path.join(os.path.dirname(__file__), 'database.sqlite3')
+today = date.today()
 
 proxies = {
     'http': 'http://134.119.205.253:8080',
@@ -30,28 +32,54 @@ def db_connect(db_path=DEFAULT_PATH):
     return con
 
 
-def create_task(con, task):
+def create_task(con, task, ignore_count):
     sql = """ INSERT INTO monitors(id, data)
-              VALUES(?,?)"""
+              VALUES(?,?);"""
+    sql_se = """SELECT * FROM monitors WHERE id=?;"""
     cur = con.cursor()
-    cur.execute(sql, task)
+    cur.execute(sql_se, [task[0]])
+    entry = cur.fetchone()
+    if not entry:
+        cur.execute(sql, task)
+    else:
+        ignore_count += 1
     con.commit()
-    return cur
+    return cur, ignore_count
 
 
 def insert_row(con, data):
-    sql_in = """INSERT INTO monitors (id, data) 
+    sql_in = """INSERT INTO monitors (id, data)
             VALUES (?, ?);"""
-    sql_se = """SELECT * FROM monitors WHERE id= ?"""
+    sql_se = """SELECT * FROM monitors WHERE id=?;"""
+    sql_prices = """INSERT INTO prices (id, data)
+                    VALUES (?, ?);"""
+    sql_prices_se = """SELECT * FROM prices WHERE id=?;"""
+    sql_prices_update = """UPDATE prices SET data=? WHERE id=?;"""
+    sql_prod_update = """UPDATE monitors SET data=? WHERE id=?;"""
+    prices = {}
     cur = con.cursor()
     cur.execute(sql_se, [data[0]])
     entry = cur.fetchone()
 
     if not entry:
         cur.execute(sql_in, [data[0], data[1]])
-        con.commit()
     else:
-        compare_price(entry, json.loads(data[1]))
+        db, scraped = compare_price(entry, json.loads(data[1]))
+        if db + scraped != 0:
+            # update price in table before checking prices.
+            cur.execute(sql_prod_update, [data[1], data[0]])
+            # check if ID is in prices tables
+            cur.execute(sql_prices_se, [data[0]])
+            entry = cur.fetchone()
+            date = today.strftime("%d/%m/%Y")
+            if entry:
+                prices = json.loads(entry[1])
+                prices[date] = scraped
+                cur.execute(sql_prices_update, [json.dumps(prices), data[0]])
+            else:
+                prices[date] = scraped
+                cur.execute(sql_prices, [data[0], json.dumps(prices)])
+    con.commit()
     return cur
 
 
@@ -67,11 +95,12 @@ def compare_price(db, scraped):
             notify = Notify()
             notify.send(db['name'] + ' PRICE DROP: ' +
                         db['price'] + ' --> ' + scraped['price'])
-
+        return db_price, scraped_price
     elif db_price > scraped_price:
         print('PRICE RAISE: ' + scraped['price'] + ' --> ' + db['price'])
+        return db_price, scraped_price
     else:
-        print()
+        return 0, 0
 
 
 def get_page_data(page_num, queue):
@@ -133,8 +162,8 @@ def get_page_data(page_num, queue):
 
 
 if __name__ == '__main__':
-    cmd = input('COMMANDS: [ADD, UPDATE]-> ')
-
+    cmd = input('COMMANDS: [ADD, UPDATE] -> ')
+    ignore_count = 0
     if cmd == 'ADD' or cmd == 'add' or cmd == 'a':
         queue = []
         total_prods = 0
@@ -147,19 +176,26 @@ if __name__ == '__main__':
         con = db_connect()
         if len(queue):
             for i, lst in enumerate(queue):
-                cur = create_task(con, [lst['id'], json.dumps(lst)])
-            print('List ' + str(i) + ' has ' + str(len(lst)) + ' entries.')
+                cur, ignore_count = create_task(
+                    con, [lst['id'], json.dumps(lst)], ignore_count)
+            print(str(i) + ' entries found.')
+
             end_time = time.time()
             try:
                 print('DB LENGTH: ' + str(cur.lastrowid))
             except NameError:
                 print('NameError: EMPTY LISTS')
                 pass
+            running_time = float(end_time - start_time)
             print('TOTAL PRODUCTS: ' + str(total_prods))
-            print('RUNNING TIME: ' + str(end_time - start_time))
+            print('RUNNING TIME: ' + f'{running_time:.2f}')
+            if ignore_count > 0:
+                print(str(ignore_count) + ' entries ignored.')
+        else:
+            print('API MALFUNCTION')
 
-    if cmd == 'UPDATE' or cmd == 'update' or cmd == 'u':
-        sql_id = """SELECT MAX(id) FROM monitors"""
+    elif cmd == 'UPDATE' or cmd == 'update' or cmd == 'u':
+        sql_id = """SELECT MAX(id) FROM monitors;"""
         start_time = time.time()
         queue = []
         total_prods = 0
