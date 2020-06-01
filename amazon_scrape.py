@@ -124,6 +124,7 @@ def get_page_data(page_num, queue):
     response = requests.get(base_url, headers=headers)
     content = response.content
     soup = BeautifulSoup(content, 'html5lib')
+    count = 0
 
     for d in soup.findAll(
         'div',
@@ -167,7 +168,8 @@ def get_page_data(page_num, queue):
         else:
             all['id'] = '-1'
         queue.append(all)
-    return queue
+        count += 1
+    return count
 
 
 if __name__ == '__main__':
@@ -180,15 +182,21 @@ if __name__ == '__main__':
         start_time = time.time()
 
         for i in range(1, 4):
-            get_page_data(i, queue)
-            total_prods += len(queue)
+            entries = get_page_data(i, queue)
+            while entries == 0:
+                print('API MALFUNCTION. SLEEPING 30 SECONDS.')
+                time.sleep(30)
+                entries = get_page_data(i, queue)
+            total_prods += entries
+
+            print('List ' + str(i) + ' has ' +
+                  str(entries) + ' entries.')
 
         con = db_connect()
         if len(queue):
             for i, lst in enumerate(queue):
                 cur, ignore_count = create_task(
                     con, [lst['id'], json.dumps(lst)], ignore_count)
-            print(str(i+1) + ' entries found.')
 
             end_time = time.time()
             cur.execute(sql_id)
@@ -209,14 +217,20 @@ if __name__ == '__main__':
         total_prods = 0
 
         for i in range(1, 4):
-            get_page_data(i, queue)
-            total_prods += len(queue)
+            entries = get_page_data(i, queue)
+            while entries == 0:
+                print('API MALFUNCTION. SLEEPING 30 SECONDS.')
+                time.sleep(30)
+                entries = get_page_data(i, queue)
+            total_prods += entries
+
+            print('List ' + str(i) + ' has ' +
+                  str(entries) + ' entries.')
 
         con = db_connect()
         if len(queue):
             for i, lst in enumerate(queue):
                 cur = insert_row(con, [lst['id'], json.dumps(lst)])
-            print(str(i+1) + ' entries found.')
 
             end_time = time.time()
             cur.execute(sql_id)
