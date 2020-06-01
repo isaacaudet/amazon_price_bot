@@ -66,17 +66,23 @@ def insert_row(con, data):
     else:
         db, scraped = compare_price(entry, json.loads(data[1]))
         if db + scraped != 0:
+
             # update price in table before checking prices.
             cur.execute(sql_prod_update, [data[1], data[0]])
-            # check if ID is in prices tables
             cur.execute(sql_prices_se, [data[0]])
-            entry = cur.fetchone()
+            entry_prices = cur.fetchone()
             date = today.strftime("%d/%m/%Y")
-            if entry:
-                prices = json.loads(entry[1])
+
+            # check if ID is in prices tables
+            if entry_prices:
+                prices = json.loads(entry_prices[1])
                 prices[date] = scraped
                 cur.execute(sql_prices_update, [json.dumps(prices), data[0]])
+                print('Price Appended.')
             else:
+                db = json.loads(entry[1])
+                db_price = list(db['price'].items())[0]
+                prices[db_price[0]] = db_price[1]
                 prices[date] = scraped
                 cur.execute(sql_prices, [data[0], json.dumps(prices)])
     con.commit()
@@ -85,19 +91,20 @@ def insert_row(con, data):
 
 def compare_price(db, scraped):
     db = json.loads(db[1])
-    db_price = float(db['price'].replace('CDN$', '').replace(',', ''))
-    scraped_price = float(scraped['price'].replace(
+    db_price = float(list(db['price'].values())[
+                     0].replace('CDN$', '').replace(',', ''))
+    scraped_price = float(list(scraped['price'].values())[0].replace(
         'CDN$', '').replace(',', ''))
 
     if db_price > scraped_price:
-        print('PRICE DROP: ' + db['price'] + ' --> ' + scraped['price'])
+        print('PRICE DROP: ' + str(db_price) + ' --> ' + str(scraped_price))
         if (db_price - scraped_price) > 1:
             notify = Notify()
             notify.send(db['name'] + ' PRICE DROP: ' +
-                        db['price'] + ' --> ' + scraped['price'])
+                        str(db_price) + ' --> ' + str(scraped_price))
         return db_price, scraped_price
     elif db_price > scraped_price:
-        print('PRICE RAISE: ' + scraped['price'] + ' --> ' + db['price'])
+        print('PRICE RAISE: ' + str(db_price) + ' --> ' + str(scraped_price))
         return db_price, scraped_price
     else:
         return 0, 0
@@ -131,6 +138,7 @@ def get_page_data(page_num, queue):
         rating = d.find('span', attrs={'class': 'a-icon-alt'})
         url = d.find('a', href=True)
         asin = d['data-asin']
+        date = today.strftime("%d/%m/%Y")
         all = {}
 
         if name is not None:
@@ -139,9 +147,10 @@ def get_page_data(page_num, queue):
             all['name'] = None
 
         if price is not None:
-            all['price'] = price.text.replace(u'\xa0', u'')
+
+            all['price'] = {date: price.text.replace(u'\xa0', u'')}
         else:
-            all['price'] = 'CDN$0'
+            all['price'] = {date: 'CDN$0'}
 
         if rating is not None:
             all['rating'] = rating.text.replace(' out of 5 stars', '/5')
