@@ -6,6 +6,7 @@ import json
 
 DEFAULT_PATH = os.path.join(os.path.dirname(__file__), 'database.sqlite3')
 sql_prices_se = """SELECT * FROM prices WHERE id=?"""
+sql_se = """SELECT * FROM monitors WHERE id=?;"""
 
 
 def db_connect(db_path=DEFAULT_PATH):
@@ -21,6 +22,10 @@ def historical_price(con, asin):
     if entry:
         prices = json.loads(entry[1])
         x, y = zip(*prices.items())
+        cur.execute(sql_se, [asin])
+        entry = cur.fetchone()
+        title = json.loads(entry[1])['name']
+        plt.title(title)
         plt.plot(x, y)
         plt.show()
     else:

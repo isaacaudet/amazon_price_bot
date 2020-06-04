@@ -98,12 +98,13 @@ def compare_price(db, scraped):
 
     if db_price > scraped_price:
         print('PRICE DROP: ' + str(db_price) + ' --> ' + str(scraped_price))
-        if (db_price - scraped_price) > 1:
-            notify = Notify()
-            notify.send(db['name'] + ' PRICE DROP: ' +
-                        str(db_price) + ' --> ' + str(scraped_price))
+        if (db_price - scraped_price) > 50:
+            if float(db['rating'].replace('/5')) > 4:
+                notify = Notify()
+                notify.send(str(db['name'].split()[:4]) + ' PRICE DROP: ' +
+                            str(db_price) + ' --> ' + str(scraped_price))
         return db_price, scraped_price
-    elif db_price > scraped_price:
+    elif db_price < scraped_price:
         print('PRICE RAISE: ' + str(db_price) + ' --> ' + str(scraped_price))
         return db_price, scraped_price
     else:
@@ -184,7 +185,7 @@ if __name__ == '__main__':
         for i in range(1, 4):
             entries = get_page_data(i, queue)
             while entries == 0:
-                print('API MALFUNCTION. SLEEPING 30 SECONDS.')
+                print('API MALFUNCTION. SLEEPING...')
                 time.sleep(30)
                 entries = get_page_data(i, queue)
             total_prods += entries
@@ -219,7 +220,7 @@ if __name__ == '__main__':
         for i in range(1, 4):
             entries = get_page_data(i, queue)
             while entries == 0:
-                print('API MALFUNCTION. SLEEPING 30 SECONDS.')
+                print('API MALFUNCTION. SLEEPING...')
                 time.sleep(30)
                 entries = get_page_data(i, queue)
             total_prods += entries
