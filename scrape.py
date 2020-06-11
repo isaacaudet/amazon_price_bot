@@ -105,8 +105,8 @@ class Scrape:
 
         soup = self.soup
 
-        name = soup.find(id='grpDescrip_20-232-907')
-        containers = soup.findAll("div", {"class": "item-container"})
+        name = soup.find('span', {'style': 'display: inline;'})
+        containers = soup.findAll('div', {'class': 'item-container'})
         price = r.html.find('li.price-current', first=True).text.strip()
         rating = soup.find('span', attrs={'class': 'print'})
         asin = soup.find('dt', string='Model').next_sibling
@@ -139,5 +139,5 @@ class Scrape:
 
 if __name__ == '__main__':
     scraper = Scrape(
-        'https://www.newegg.ca/g-skill-32gb-288-pin-ddr4-sdram/p/N82E16820232907?Item=N82E16820232907&cm_sp=homepage_dailydeals-_-p1_20-232-907-_-06112020')
+        'https://www.newegg.ca/dell-27/p/0JC-0004-00PR0?Description=dell%20ultrasharp&cm_re=dell_ultrasharp-_-9SIAH20BBR8697-_-Product')
     print(scraper.newegg())

@@ -8,7 +8,7 @@ import json
 import os
 from notify_run import Notify
 from datetime import date
-
+from progress.bar import Bar
 
 DEFAULT_PATH = os.path.join(os.path.dirname(__file__), 'database.sqlite3')
 today = date.today()
@@ -96,12 +96,12 @@ def compare_price(db, scraped):
     scraped_price = float(list(scraped['price'].values())[0].replace(
         'CDN$', '').replace(',', ''))
 
-    if db_price > scraped_price:
+    if db_price > scraped_price and scraped_price != 0:
         print('PRICE DROP: ' + str(db_price) + ' --> ' + str(scraped_price))
-        if (db_price - scraped_price) > 50:
-            if float(db['rating'].replace('/5')) > 4:
+        if (db_price - scraped_price) > 25:
+            if float(db['rating'].replace('/5', '')) > 4:
                 notify = Notify()
-                notify.send(str(db['name'].split()[:4]) + ' PRICE DROP: ' +
+                notify.send(str(' '.join(db['name'].split()[:4])) + ' PRICE DROP: ' +
                             str(db_price) + ' --> ' + str(scraped_price))
         return db_price, scraped_price
     elif db_price < scraped_price:
@@ -216,17 +216,15 @@ if __name__ == '__main__':
         start_time = time.time()
         queue = []
         total_prods = 0
-
+        bar = Bar('Scraping', max=3)
         for i in range(1, 4):
             entries = get_page_data(i, queue)
             while entries == 0:
-                print('API MALFUNCTION. SLEEPING...')
                 time.sleep(30)
                 entries = get_page_data(i, queue)
             total_prods += entries
-
-            print('List ' + str(i) + ' has ' +
-                  str(entries) + ' entries.')
+            bar.next()
+        bar.finish()
 
         con = db_connect()
         if len(queue):
