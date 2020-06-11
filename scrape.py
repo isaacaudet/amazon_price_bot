@@ -12,7 +12,7 @@ from requests_html import HTMLSession
 #               canadacomputers
 #               memoryexpress
 #               mikescomputershop
-#               walmart
+
 today = date.today()
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
@@ -106,7 +106,6 @@ class Scrape:
         soup = self.soup
 
         name = soup.find('span', {'style': 'display: inline;'})
-        containers = soup.findAll('div', {'class': 'item-container'})
         price = r.html.find('li.price-current', first=True).text.strip()
         rating = soup.find('span', attrs={'class': 'print'})
         asin = soup.find('dt', string='Model').next_sibling
@@ -136,8 +135,124 @@ class Scrape:
             all['id'] = '-1'
         return all
 
+    def thesource(self):
+        soup = self.soup
+
+        name = soup.find('h1', {'class': 'pdp-name'}).find('span')
+        price = soup.find('div', {'class': 'pdp-sale-price'})
+        asin = soup.find('span', {'class': 'identifier'})
+        date = today.strftime("%d/%m/%Y")
+        all = {}
+
+        if name is not None:
+            all['name'] = name.text.strip()
+        else:
+            all['name'] = None
+
+        if price is not None:
+            all['price'] = {date: price.text.strip().replace(
+                u'\xa0', u'')}
+        else:
+            all['price'] = {date: 'CDN$0'}
+
+        # potentially add rating scraping
+        all['rating'] = '-1'
+
+        if asin is not None:
+            all['id'] = asin.text
+        else:
+            all['id'] = '-1'
+
+        return all
+
+    def canadacomputers(self):
+        soup = self.soup
+
+        name = soup.find(
+            'h1', {'class': 'h3 product-title mb-2'}).find('strong')
+        price = soup.find('span', {'class': 'h2-big'}).find('strong')
+        asin = soup.find('p', {'class': 'm-0 text-small'})
+        date = today.strftime("%d/%m/%Y")
+        all = {}
+
+        if name is not None:
+            all['name'] = name.text.strip()
+        else:
+            all['name'] = None
+
+        if price is not None:
+            all['price'] = {date: price.text.strip().replace(
+                u'\xa0', u'')}
+        else:
+            all['price'] = {date: 'CDN$0'}
+
+        if asin is not None:
+            all['id'] = asin.text.replace('Item Code:  ', '')
+        else:
+            all['id'] = '-1'
+
+        return all
+
+    def memoryexpress(self):
+        soup = self.soup
+
+        name = soup.find(
+            'header', {'class': 'c-capr-header'}).find('h1')
+        price = soup.find(
+            'div', {'class': 'GrandTotal c-capr-pricing__grand-total'}).find('div')
+        asin = soup.find(
+            'article', {'class': 'l-capr-page'})['data-product-id']
+        date = today.strftime("%d/%m/%Y")
+        all = {}
+
+        if name is not None:
+            all['name'] = name.text.strip()
+        else:
+            all['name'] = None
+
+        if price is not None:
+            all['price'] = {date: price.text.strip().replace(
+                'Only', '')}
+        else:
+            all['price'] = {date: 'CDN$0'}
+
+        if asin is not None:
+            all['id'] = asin
+        else:
+            all['id'] = '-1'
+
+        return all
+
+    def mikescomputershop(self):
+        soup = self.soup
+
+        name = soup.find('div', {'class': 'gd-1 Title'})
+        price = soup.find('div', {'class': 'Price Special'})
+        if price is None:
+            price = soup.find('div', {'class': 'retail'})
+
+        asin = soup.find(
+            'dt', string='Product Model').next_element.next_element.next_element
+        date = today.strftime("%d/%m/%Y")
+        all = {}
+
+        if name is not None:
+            all['name'] = name.text.strip()
+        else:
+            all['name'] = None
+
+        if price is not None:
+            all['price'] = {date: price.text}
+        else:
+            all['price'] = {date: 'CDN$0'}
+
+        if asin is not None:
+            all['id'] = asin.text.strip()
+        else:
+            all['id'] = '-1'
+
+        return all
+
 
 if __name__ == '__main__':
-    scraper = Scrape(
-        'https://www.newegg.ca/dell-27/p/0JC-0004-00PR0?Description=dell%20ultrasharp&cm_re=dell_ultrasharp-_-9SIAH20BBR8697-_-Product')
-    print(scraper.newegg())
+    scraper = Scrape()
