@@ -3,7 +3,15 @@ import requests
 from datetime import date
 from progress.bar import Bar
 from requests_html import HTMLSession
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
+
+import time
 # class for scraping various vendors for ID/SN
 # Vendor List:  amazon
 #               bestbuy
@@ -22,11 +30,20 @@ headers = {
     'DNT': '1',
     'Connection': 'close',
 }
+options = Options()
+options.headless = True
 
 
 class Scrape:
 
-    def __init__(self, url):
+    # def __init__(self, url):
+    def get_content(self, url):
+        response = requests.get(url, headers=headers)
+        content = response.content
+        self.soup = BeautifulSoup(content, 'lxml')
+        self.url = url
+
+    def sn_lookup(self, url):
         response = requests.get(url, headers=headers)
         content = response.content
         self.soup = BeautifulSoup(content, 'lxml')
@@ -58,32 +75,48 @@ class Scrape:
 
         return all
 
-    def bestbuy(self):
-        soup = self.soup
+    def bestbuy(self, sn=None):
 
-        name = soup.find('h1', attrs={'class': 'productName_19xJx'})
-        price = soup.find(
-            'span', attrs={'class': 'screenReaderOnly_3anTj large_3aP7Z'})
-        asin = soup.find('span', attrs={'itemprop': 'model'})
-        date = today.strftime("%d/%m/%Y")
-        all = {}
+        if sn is None:
+            self.get_content(
+                'https://www.bestbuy.ca/en-ca/product/amazon-fire-tv-stick-media-streamer-with-alexa-voice-remote/13365349')
+            soup = self.soup
+            name = soup.find('h1', attrs={'class': 'productName_19xJx'})
+            price = soup.find(
+                'span', attrs={'class': 'screenReaderOnly_3anTj large_3aP7Z'})
+            asin = soup.find('span', attrs={'itemprop': 'model'})
+            date = today.strftime("%d/%m/%Y")
+            all = {}
 
-        if asin is not None:
-            all['id'] = asin.text
+            if asin is not None:
+                all['id'] = asin.text
+            else:
+                all['id'] = '-1'
+
+            if name is not None:
+                all['name'] = name.text.strip()
+            else:
+                all['name'] = None
+
+            if price is not None:
+                all['price'] = {date: price.text}
+            else:
+                all['price'] = {date: 'CDN$0'}
+
+            return all
+
         else:
-            all['id'] = '-1'
+            # use Selenium to parse JavaScript search page and retrieve price of first element
+            url = 'https://www.bestbuy.ca/en-ca/search?search=' + sn
+            driver = webdriver.Firefox(options=options)
+            driver.get(url)
 
-        if name is not None:
-            all['name'] = name.text.strip()
-        else:
-            all['name'] = None
+            price = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//div[3]/span/div"))).text
+            print(price)
+            driver.quit()
 
-        if price is not None:
-            all['price'] = {date: price.text}
-        else:
-            all['price'] = {date: 'CDN$0'}
-
-        return all
+            return price
 
     def newegg(self):
         # requests-html needed to parse JavaScript (price)
@@ -233,8 +266,10 @@ class Scrape:
 
         return all
 
-    def check_all(self, start):
+    # def check_all(self, start):
+    #     if start ==
 
 
 if __name__ == '__main__':
     scraper = Scrape()
+    scraper.bestbuy('dell')
