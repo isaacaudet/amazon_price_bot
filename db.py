@@ -18,14 +18,21 @@ class Database:
         self.table = db_table
 
     def insert(self, data):
-        id_, name, price, history = data
+        id_ = data['id']
+        name = data['name']
+        print(data['price'])
+        price = json.dumps(data['price'])
+        print(price)
+        print(json.loads(price))
         query = db.insert(self.tracked).values(
-            id=id_, name=name, price=price, history=history)
+            id=id_, name=name, price=price)
         execute = self.connection.execute(query)
 
     def update(self, data):
-        id_, name, price, history = data
-        query = db.update(self.tracked).values(price=price, history=history)
+        id_ = data['id']
+        name = data['name']
+        price = json.dumps(data['price'])
+        query = db.update(self.tracked).values(price=price)
         query = query.where(self.tracked.columns.id == id_)
         execute = self.connection.execute(query)
 

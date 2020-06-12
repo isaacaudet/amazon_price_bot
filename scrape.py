@@ -37,10 +37,14 @@ class Scrape:
 
         name = soup.find(id='productTitle')
         price = soup.find(id='newBuyBoxPrice')
-        rating = soup.find(id='acrPopover')
         asin = soup.find('td', string='ASIN').next_sibling
         date = today.strftime("%d/%m/%Y")
         all = {}
+
+        if asin is not None:
+            all['id'] = asin.text
+        else:
+            all['id'] = '-1'
 
         if name is not None:
             all['name'] = name.text.strip()
@@ -52,16 +56,6 @@ class Scrape:
         else:
             all['price'] = {date: 'CDN$0'}
 
-        if rating is not None:
-            all['rating'] = rating.text.strip().replace(
-                ' out of 5 stars', '/5')
-        else:
-            all['rating'] = '-1'
-
-        if asin is not None:
-            all['id'] = asin.text
-        else:
-            all['id'] = '-1'
         return all
 
     def bestbuy(self):
@@ -70,10 +64,14 @@ class Scrape:
         name = soup.find('h1', attrs={'class': 'productName_19xJx'})
         price = soup.find(
             'span', attrs={'class': 'screenReaderOnly_3anTj large_3aP7Z'})
-        rating = soup.find('label', attrs={'class': 'ratings_I_BnL'})
         asin = soup.find('span', attrs={'itemprop': 'model'})
         date = today.strftime("%d/%m/%Y")
         all = {}
+
+        if asin is not None:
+            all['id'] = asin.text
+        else:
+            all['id'] = '-1'
 
         if name is not None:
             all['name'] = name.text.strip()
@@ -85,16 +83,6 @@ class Scrape:
         else:
             all['price'] = {date: 'CDN$0'}
 
-        if rating is not None:
-            all['rating'] = rating.text.strip().replace(
-                ' out of 5 stars', '/5')
-        else:
-            all['rating'] = '-1'
-
-        if asin is not None:
-            all['id'] = asin.text
-        else:
-            all['id'] = '-1'
         return all
 
     def newegg(self):
@@ -107,10 +95,15 @@ class Scrape:
 
         name = soup.find('span', {'style': 'display: inline;'})
         price = r.html.find('li.price-current', first=True).text.strip()
-        rating = soup.find('span', attrs={'class': 'print'})
+        # rating = soup.find('span', attrs={'class': 'print'})
         asin = soup.find('dt', string='Model').next_sibling
         date = today.strftime("%d/%m/%Y")
         all = {}
+
+        if asin is not None:
+            all['id'] = asin.text
+        else:
+            all['id'] = '-1'
 
         if name is not None:
             all['name'] = name.text.strip()
@@ -123,16 +116,6 @@ class Scrape:
         else:
             all['price'] = {date: 'CDN$0'}
 
-        if rating is not None:
-            all['rating'] = rating.text.strip().replace(
-                ' out of 5 stars', '/5')
-        else:
-            all['rating'] = '-1'
-
-        if asin is not None:
-            all['id'] = asin.text
-        else:
-            all['id'] = '-1'
         return all
 
     def thesource(self):
@@ -144,6 +127,11 @@ class Scrape:
         date = today.strftime("%d/%m/%Y")
         all = {}
 
+        if asin is not None:
+            all['id'] = asin.text
+        else:
+            all['id'] = '-1'
+
         if name is not None:
             all['name'] = name.text.strip()
         else:
@@ -154,14 +142,6 @@ class Scrape:
                 u'\xa0', u'')}
         else:
             all['price'] = {date: 'CDN$0'}
-
-        # potentially add rating scraping
-        all['rating'] = '-1'
-
-        if asin is not None:
-            all['id'] = asin.text
-        else:
-            all['id'] = '-1'
 
         return all
 
@@ -175,6 +155,11 @@ class Scrape:
         date = today.strftime("%d/%m/%Y")
         all = {}
 
+        if asin is not None:
+            all['id'] = asin.text.replace('Item Code:  ', '')
+        else:
+            all['id'] = '-1'
+
         if name is not None:
             all['name'] = name.text.strip()
         else:
@@ -185,11 +170,6 @@ class Scrape:
                 u'\xa0', u'')}
         else:
             all['price'] = {date: 'CDN$0'}
-
-        if asin is not None:
-            all['id'] = asin.text.replace('Item Code:  ', '')
-        else:
-            all['id'] = '-1'
 
         return all
 
@@ -205,6 +185,11 @@ class Scrape:
         date = today.strftime("%d/%m/%Y")
         all = {}
 
+        if asin is not None:
+            all['id'] = asin
+        else:
+            all['id'] = '-1'
+
         if name is not None:
             all['name'] = name.text.strip()
         else:
@@ -215,11 +200,6 @@ class Scrape:
                 'Only', '')}
         else:
             all['price'] = {date: 'CDN$0'}
-
-        if asin is not None:
-            all['id'] = asin
-        else:
-            all['id'] = '-1'
 
         return all
 
@@ -236,6 +216,11 @@ class Scrape:
         date = today.strftime("%d/%m/%Y")
         all = {}
 
+        if asin is not None:
+            all['id'] = asin.text.strip()
+        else:
+            all['id'] = '-1'
+
         if name is not None:
             all['name'] = name.text.strip()
         else:
@@ -246,12 +231,9 @@ class Scrape:
         else:
             all['price'] = {date: 'CDN$0'}
 
-        if asin is not None:
-            all['id'] = asin.text.strip()
-        else:
-            all['id'] = '-1'
-
         return all
+
+    def check_all(self, start):
 
 
 if __name__ == '__main__':
