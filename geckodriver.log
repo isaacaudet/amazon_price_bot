@@ -178,7 +178,8 @@ JavaScript warning: https://assets.adobedtm.com/launch-EN048473b7b22f4c66a285840
 JavaScript error: https://bestbuycanada.my.salesforce.com/embeddedservice/5.0/frame/broadcast.esw.min.js, line 20: SecurityError: The operation is insecure.
 JavaScript error: https://bestbuycanada.my.salesforce.com/embeddedservice/5.0/frame/session.esw.min.js, line 1: SecurityError: The operation is insecure.
 JavaScript error: https://bestbuycanada.my.salesforce.com/embeddedservice/5.0/frame/chasitor.esw.min.js, line 1: TypeError: A.broadcastAPI is undefined
-1591991855082	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "-marionette" "-headless" "-foreground" "-no-remote" "-profile" "C:\\Users\\isaac\\AppData\\Local\\Temp\\rust_mozprofile.d8ORSRZK4FDt"
+Exiting due to channel error.
+	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "-marionette" "-headless" "-foreground" "-no-remote" "-profile" "C:\\Users\\isaac\\AppData\\Local\\Temp\\rust_mozprofile.d8ORSRZK4FDt"
 *** You are running in headless mode.
 1591991855411	addons.webextension.doh-rollout@mozilla.org	WARN	Loading extension 'doh-rollout@mozilla.org': Reading manifest: Invalid extension permission: networkStatus
 1591991855732	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: mozillaAddons
@@ -297,3 +298,14 @@ JavaScript error: https://bestbuycanada.my.salesforce.com/embeddedservice/5.0/fr
 JavaScript error: https://bestbuycanada.my.salesforce.com/embeddedservice/5.0/frame/session.esw.min.js, line 1: SecurityError: The operation is insecure.
 JavaScript error: https://bestbuycanada.my.salesforce.com/embeddedservice/5.0/frame/chasitor.esw.min.js, line 1: TypeError: A.broadcastAPI is undefined
 1591992325303	Marionette	INFO	Stopped listening on port 56665
+1592068410385	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "-marionette" "-headless" "-foreground" "-no-remote" "-profile" "C:\\Users\\isaac\\AppData\\Local\\Temp\\rust_mozprofile.pceFeHQlbvUh"
+*** You are running in headless mode.
+1592068410715	addons.webextension.doh-rollout@mozilla.org	WARN	Loading extension 'doh-rollout@mozilla.org': Reading manifest: Invalid extension permission: networkStatus
+1592068411041	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: mozillaAddons
+1592068411041	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: telemetry
+1592068411041	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: resource://pdf.js/
+1592068411041	addons.webextension.screenshots@mozilla.org	WARN	Loading extension 'screenshots@mozilla.org': Reading manifest: Invalid extension permission: about:reader*
+JavaScript error: resource://gre/modules/XULStore.jsm, line 66: Error: Can't find profile directory.
+1592068412475	Marionette	INFO	Listening on port 54188
+1592068412496	Marionette	WARN	TLS certificate errors will be ignored for this session
+1592068418457	Marionette	INFO	Stopped listening on port 54188
