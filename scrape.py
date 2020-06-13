@@ -51,7 +51,6 @@ class Scrape:
 
     def amazon(self):
         soup = self.soup
-
         name = soup.find(id='productTitle')
         price = soup.find(id='newBuyBoxPrice')
         asin = soup.find('td', string='ASIN').next_sibling
@@ -109,12 +108,14 @@ class Scrape:
             url = 'https://www.bestbuy.ca/en-ca/search?search=' + sn
             driver = webdriver.Firefox(options=options)
             driver.get(url)
+
             try:
                 price = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.XPATH, "//div[3]/span/div"))).text
                 print(price)
             finally:
                 driver.quit()
+
             return price
 
     def newegg(self, sn=None):
@@ -123,7 +124,6 @@ class Scrape:
             session = HTMLSession()
             r = session.get(self.url)
             r.html.render()
-
             soup = self.soup
 
             name = soup.find('span', {'style': 'display: inline;'})
@@ -157,19 +157,20 @@ class Scrape:
             session = HTMLSession()
             r = session.get(url)
             r.html.render()
+
             try:
                 price = r.html.find('li.price-current',
                                     first=True).text.strip().replace(' –', '')
                 print(price)
             except Exception:
                 price = 0
+
             return price
 
     def thesource(self, sn=None):
         if sn is None:
             self.get_content(self.url)
             soup = self.soup
-
             name = soup.find('h1', {'class': 'pdp-name'}).find('span')
             price = soup.find('div', {'class': 'pdp-sale-price'})
             asin = soup.find('span', {'class': 'identifier'})
@@ -199,19 +200,20 @@ class Scrape:
             session = HTMLSession()
             r = session.get(url)
             r.html.render()
+
             try:
                 price = r.html.find('div.sale-price',
                                     first=True).text
             except Exception:
                 print('The Source: Price not found.')
                 price = 0
+
             return price
 
     def canadacomputers(self, sn=None):
         if sn is None:
             self.get_content(self.get_content)
             soup = self.soup
-
             name = soup.find(
                 'h1', {'class': 'h3 product-title mb-2'}).find('strong')
             price = soup.find('span', {'class': 'h2-big'}).find('strong')
@@ -256,7 +258,6 @@ class Scrape:
         if sn is None:
             self.get_content(self.url)
             soup = self.soup
-
             name = soup.find(
                 'header', {'class': 'c-capr-header'}).find('h1')
             price = soup.find(
@@ -303,12 +304,10 @@ class Scrape:
         if sn is None:
             self.get_content(self.url)
             soup = self.soup
-
             name = soup.find('div', {'class': 'gd-1 Title'})
             price = soup.find('div', {'class': 'Price Special'})
             if price is None:
                 price = soup.find('div', {'class': 'retail'})
-
             asin = soup.find(
                 'dt', string='Product Model').next_element.next_element.next_element
             date = today.strftime("%d/%m/%Y")
@@ -335,18 +334,15 @@ class Scrape:
             url = 'https://www.mikescomputershop.com/catalog/?q=' + sn
             driver = webdriver.Firefox(options=options)
             driver.get(url)
+
             try:
                 price = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.XPATH, "//div/div/ul/li/div"))).text
             finally:
                 driver.quit()
-            return price
 
-        # return price
-        # def check_all(self, start):
-        #     if start ==
+            return price
 
 
 if __name__ == '__main__':
     scraper = Scrape()
-    scraper.mikescomputershop('ryzen')
